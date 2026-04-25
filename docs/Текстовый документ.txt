@@ -1,0 +1,99 @@
+Table agencies {
+  agency_id integer [pk]
+  city varchar
+  address text
+}
+
+Table managers {
+  manager_id integer [pk]
+  full_name varchar
+  agency_id integer [ref: > agencies.agency_id]
+  hire_date date
+}
+
+Table agents {
+  agent_id integer [pk]
+  full_name varchar
+  birth_date date
+  hire_date date
+  agent_type varchar
+  manager_id integer [ref: > managers.manager_id]
+}
+
+Table clients {
+  client_id integer [pk]
+  full_name varchar
+  birth_date date
+  address text
+}
+
+Table vehicles {
+  vehicle_vin varchar [pk]
+  model varchar
+  year integer
+  engine_power integer
+  drivers_count varchar
+  kbm decimal
+}
+
+Table houses {
+  house_id integer [pk]
+  address text
+  construction_year integer
+  property_type varchar
+  floors_count integer
+  additional_structures varchar
+}
+
+Table flats {
+  flat_id integer [pk]
+  address text
+  construction_year integer
+  floor integer
+  is_extreme_floor boolean
+  address_match boolean
+}
+
+Table base_contracts {
+  contract_id integer [pk]
+  agent_id integer [ref: > agents.agent_id]
+  client_id integer [ref: > clients.client_id]
+  contract_status varchar
+  start_date date
+  end_date date
+  premium decimal
+  payout decimal
+  contract_type varchar
+  sum_insured decimal
+}
+
+Table osago_contracts {
+  contract_id integer [ref: > base_contracts.contract_id, pk]
+  vehicle_vin varchar [ref: > vehicles.vehicle_vin]
+  is_pvu boolean
+}
+
+Table kasko_contracts {
+  contract_id integer [ref: > base_contracts.contract_id, pk]
+  vehicle_vin varchar [ref: > vehicles.vehicle_vin]
+  is_at_fault boolean
+}
+
+Table home_contracts {
+  contract_id integer [ref: > base_contracts.contract_id, pk]
+  house_id integer [ref: > houses.house_id]
+}
+
+Table flat_contracts {
+  contract_id integer [ref: > base_contracts.contract_id, pk]
+  flat_id integer [ref: > flats.flat_id]
+}
+
+Table sales_plans {
+  plan_id integer [pk]
+  agent_id integer [ref: > agents.agent_id]
+  year integer
+  month integer
+  product_type varchar
+  plan_amount decimal
+}
