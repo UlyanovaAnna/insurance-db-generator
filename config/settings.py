@@ -32,8 +32,8 @@ DATE_RANGE = {
     'start': f'{CURRENT_YEAR-1}-01-01',
     'end': f'{CURRENT_YEAR}-12-31'
 }
-GENERATION_START_YEAR = int(os.getenv('GENERATION_START_YEAR', '2024'))
-GENERATION_END_YEAR = int(os.getenv('GENERATION_END_YEAR', '2025'))
+GENERATION_START_YEAR = int(os.getenv('GENERATION_START_YEAR', str(CURRENT_YEAR - 1)))
+GENERATION_END_YEAR = int(os.getenv('GENERATION_END_YEAR', str(CURRENT_YEAR)))
 
 # Коэффициенты
 SALES_PLAN_MULTIPLIER = 1.2  # 20% рост планов
