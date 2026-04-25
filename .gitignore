@@ -49,6 +49,7 @@ data/
 *.db
 *.sqlite
 *.log
+*.mp4
 
 # IDE
 .vscode/
