@@ -29,6 +29,14 @@ A synthetic insurance data platform for safe analytics prototyping, SQL validati
 
 ## Quick Start
 
+### Prerequisites
+
+- Python 3.10+
+- PostgreSQL (running locally or remotely)
+- A created database (e.g., `insurance_sandbox`)
+
+### Setup
+
 1. Install dependencies:
 
 ```bash
@@ -41,15 +49,27 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
+On Windows PowerShell, use:
+
+```powershell
+Copy-Item .env.example .env
+```
+
 Fill in PostgreSQL credentials in `.env`.
 
-3. Initialize schema:
+3. Create database (if needed):
+
+```sql
+CREATE DATABASE insurance_sandbox;
+```
+
+4. Initialize schema:
 
 ```bash
 python scripts/db_init.py
 ```
 
-4. Generate and load data:
+5. Generate and load data:
 
 ```bash
 python scripts/data_generator.py
@@ -72,3 +92,4 @@ python scripts/data_generator.py
 
 - Data is synthetic and intended for analytics/testing, not actuarial production use.
 - Keep `.env` and real credentials out of version control.
+- If connection fails, verify PostgreSQL host/port and user permissions.
