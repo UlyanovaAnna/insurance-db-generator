@@ -1,80 +1,74 @@
 # Insurance DB Generator (PostgreSQL)
 
-Синтетическая база данных страховой компании для безопасного тестирования аналитики, SQL-запросов и BI-дашбордов (например, Yandex DataLens) без доступа к production-данным.
+A synthetic insurance data platform for safe analytics prototyping, SQL validation, and BI dashboard testing (including Yandex DataLens) without exposing production data.
 
-## Что внутри
+## Features
 
-- PostgreSQL-схема со связанными сущностями: агентства, менеджеры, агенты, клиенты, договоры, продуктовые таблицы, планы продаж.
-- Генератор доменно-реалистичных данных:
-  - сезонность продаж;
-  - статусы договоров;
-  - возобновления;
-  - вероятностная логика выплат;
-  - генерация планов продаж по истории.
-- Скрипт инициализации схемы и индексов.
-- Пакетная загрузка данных в БД.
+- Domain-driven PostgreSQL schema for insurance operations:
+  agencies, managers, agents, clients, contracts, product tables, and sales plans.
+- Realistic synthetic data generation with:
+  seasonality, contract statuses, renewals, payout probability logic, and monthly sales plans.
+- Automated pipeline:
+  schema initialization -> data generation -> batch loading.
+- Reproducible runs using configurable `SEED`.
 
-## Стек
+## Tech Stack
 
 - Python 3.10+
 - PostgreSQL
 - pandas, numpy, psycopg2-binary, Faker, python-dotenv
 
-## Структура проекта
+## Project Structure
 
-- `config/settings.py` — настройки генерации, таблицы, коэффициенты.
-- `config/database.py` — подключение и обертка над SQL-операциями.
-- `scripts/db_init.py` — создание схемы и индексов.
-- `scripts/data_generator.py` — генерация и загрузка данных.
-- `.env.example` — шаблон переменных окружения.
+- `config/settings.py` - generation settings, schema config, coefficients.
+- `config/database.py` - PostgreSQL connection and query helpers.
+- `scripts/db_init.py` - schema and index initialization.
+- `scripts/data_generator.py` - synthetic data generation and loading.
+- `.env.example` - environment variable template.
+- `docs/schema.dbml` - data model reference.
 
-## Быстрый старт
+## Quick Start
 
-1. Установите зависимости:
+1. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Подготовьте переменные окружения:
+2. Configure environment variables:
 
 ```bash
 cp .env.example .env
 ```
 
-Заполните в `.env` параметры подключения к PostgreSQL.
+Fill in PostgreSQL credentials in `.env`.
 
-3. Инициализируйте схему:
+3. Initialize schema:
 
 ```bash
 python scripts/db_init.py
 ```
 
-4. Сгенерируйте данные:
+4. Generate and load data:
 
 ```bash
 python scripts/data_generator.py
 ```
 
-## Переменные окружения
+## Environment Variables
 
-- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` — подключение к PostgreSQL.
-- `MODE` — режим (`DEV/TEST/PROD`).
-- `SEED` — сид для воспроизводимой генерации.
+- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` - PostgreSQL connection.
+- `MODE` - runtime mode (`DEV/TEST/PROD`).
+- `SEED` - deterministic synthetic data generation.
 
-## Пример сценариев использования
+## Use Cases
 
-- Быстрое прототипирование дашбордов в DataLens.
-- Отладка SQL-моделей и KPI.
-- Тестирование когортных/юнит-экономических гипотез.
-- Обучение команд аналитике на безопасных данных.
+- BI prototype validation before production rollout.
+- SQL and KPI logic testing in a safe environment.
+- Management reporting experiments without sensitive data.
+- Team training on realistic insurance datasets.
 
-## Ограничения
+## Notes
 
-- Данные синтетические и не предназначены для актуарных расчетов в production.
-- Вероятностная логика упрощена для удобства BI-прототипирования.
-
-## Безопасность
-
-- Не коммитьте `.env` и реальные доступы к БД.
-- Используйте отдельную тестовую PostgreSQL-базу.
+- Data is synthetic and intended for analytics/testing, not actuarial production use.
+- Keep `.env` and real credentials out of version control.
