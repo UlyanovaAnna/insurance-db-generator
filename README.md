@@ -5,12 +5,16 @@ A synthetic insurance data platform for safe analytics prototyping, SQL validati
 ## Features
 
 - Domain-driven PostgreSQL schema for insurance operations:
-  agencies, managers, agents, clients, contracts, product tables, and sales plans.
+  agencies, managers, agents, clients, contracts, product tables, sales plans,
+  claims lifecycle, claim payments, reserves, commissions, and operating expenses.
 - Realistic synthetic data generation with:
-  seasonality, contract statuses, renewals, payout probability logic, and monthly sales plans.
+  seasonality, contract statuses, renewals, payout probability logic,
+  claims lifecycle statuses, multi-stage claim payments, reserves, and monthly sales plans.
 - Automated pipeline:
   schema initialization -> data generation -> batch loading.
 - Reproducible runs using configurable `SEED`.
+- Rolling-year generation logic (`CURRENT_YEAR-1` and `CURRENT_YEAR`) to avoid hardcoded calendar years.
+- Uniqueness enforced for sales plans at `(agent_id, year, month, product_type)`.
 
 ## Tech Stack
 

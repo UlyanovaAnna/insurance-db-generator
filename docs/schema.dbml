@@ -97,3 +97,47 @@ Table sales_plans {
   product_type varchar
   plan_amount decimal
 }
+
+Table claims {
+  claim_id integer [pk]
+  contract_id integer [ref: > base_contracts.contract_id]
+  claim_date date
+  reported_date date
+  settled_date date
+  claim_status varchar
+  claimed_amount decimal
+  approved_amount decimal
+  decline_reason varchar
+}
+
+Table claim_payments {
+  payment_id integer [pk]
+  claim_id integer [ref: > claims.claim_id]
+  payment_date date
+  payment_amount decimal
+}
+
+Table claim_reserves {
+  reserve_id integer [pk]
+  claim_id integer [ref: > claims.claim_id]
+  reserve_date date
+  reserve_amount decimal
+}
+
+Table agent_commissions {
+  commission_id integer [pk]
+  contract_id integer [ref: > base_contracts.contract_id]
+  agent_id integer [ref: > agents.agent_id]
+  accrual_date date
+  commission_rate decimal
+  commission_amount decimal
+}
+
+Table operating_expenses {
+  expense_id integer [pk]
+  agency_id integer [ref: > agencies.agency_id]
+  expense_year integer
+  expense_month integer
+  expense_type varchar
+  amount decimal
+}

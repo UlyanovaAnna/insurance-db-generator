@@ -182,9 +182,71 @@ TABLES_CONFIG = {
         ],
         'foreign_keys': [
             ('agent_id', 'agents(agent_id)')
+        ]
+    },
+    'claims': {
+        'columns': [
+            ('claim_id', 'SERIAL PRIMARY KEY'),
+            ('contract_id', 'INTEGER NOT NULL'),
+            ('claim_date', 'DATE NOT NULL'),
+            ('reported_date', 'DATE NOT NULL'),
+            ('settled_date', 'DATE'),
+            ('claim_status', 'VARCHAR(20) NOT NULL'),
+            ('claimed_amount', 'DECIMAL(12,2) NOT NULL'),
+            ('approved_amount', 'DECIMAL(12,2)'),
+            ('decline_reason', 'VARCHAR(100)')
         ],
-        'indexes': [
-            '(agent_id, year, month, product_type) UNIQUE'
+        'foreign_keys': [
+            ('contract_id', 'base_contracts(contract_id)')
+        ]
+    },
+    'claim_payments': {
+        'columns': [
+            ('payment_id', 'SERIAL PRIMARY KEY'),
+            ('claim_id', 'INTEGER NOT NULL'),
+            ('payment_date', 'DATE NOT NULL'),
+            ('payment_amount', 'DECIMAL(12,2) NOT NULL')
+        ],
+        'foreign_keys': [
+            ('claim_id', 'claims(claim_id)')
+        ]
+    },
+    'claim_reserves': {
+        'columns': [
+            ('reserve_id', 'SERIAL PRIMARY KEY'),
+            ('claim_id', 'INTEGER NOT NULL'),
+            ('reserve_date', 'DATE NOT NULL'),
+            ('reserve_amount', 'DECIMAL(12,2) NOT NULL')
+        ],
+        'foreign_keys': [
+            ('claim_id', 'claims(claim_id)')
+        ]
+    },
+    'agent_commissions': {
+        'columns': [
+            ('commission_id', 'SERIAL PRIMARY KEY'),
+            ('contract_id', 'INTEGER NOT NULL'),
+            ('agent_id', 'INTEGER NOT NULL'),
+            ('accrual_date', 'DATE NOT NULL'),
+            ('commission_rate', 'DECIMAL(5,4) NOT NULL'),
+            ('commission_amount', 'DECIMAL(12,2) NOT NULL')
+        ],
+        'foreign_keys': [
+            ('contract_id', 'base_contracts(contract_id)'),
+            ('agent_id', 'agents(agent_id)')
+        ]
+    },
+    'operating_expenses': {
+        'columns': [
+            ('expense_id', 'SERIAL PRIMARY KEY'),
+            ('agency_id', 'INTEGER NOT NULL'),
+            ('expense_year', 'INTEGER NOT NULL'),
+            ('expense_month', 'INTEGER NOT NULL'),
+            ('expense_type', 'VARCHAR(30) NOT NULL'),
+            ('amount', 'DECIMAL(12,2) NOT NULL')
+        ],
+        'foreign_keys': [
+            ('agency_id', 'agencies(agency_id)')
         ]
     }
 }

@@ -23,7 +23,9 @@ def initialize_database():
             'agencies', 'managers', 'agents', 'clients',
             'vehicles', 'houses', 'flats', 'base_contracts',
             'osago_contracts', 'kasko_contracts', 'home_contracts',
-            'flat_contracts', 'sales_plans'
+            'flat_contracts', 'sales_plans', 'claims',
+            'claim_payments', 'claim_reserves', 'agent_commissions',
+            'operating_expenses'
         ]
         
         for table_name in creation_order:
@@ -55,7 +57,13 @@ def initialize_database():
             "CREATE INDEX IF NOT EXISTS idx_osago_vehicle_vin ON osago_contracts(vehicle_vin)",
             "CREATE INDEX IF NOT EXISTS idx_kasko_vehicle_vin ON kasko_contracts(vehicle_vin)",
             "CREATE INDEX IF NOT EXISTS idx_houses_property_type ON houses(property_type)",
-            "CREATE INDEX IF NOT EXISTS idx_sales_plans_agent_year_month ON sales_plans(agent_id, year, month)"
+            "CREATE UNIQUE INDEX IF NOT EXISTS ux_sales_plans_agent_year_month_product ON sales_plans(agent_id, year, month, product_type)",
+            "CREATE INDEX IF NOT EXISTS idx_claims_contract_id ON claims(contract_id)",
+            "CREATE INDEX IF NOT EXISTS idx_claims_status ON claims(claim_status)",
+            "CREATE INDEX IF NOT EXISTS idx_claim_payments_claim_id ON claim_payments(claim_id)",
+            "CREATE INDEX IF NOT EXISTS idx_claim_reserves_claim_id ON claim_reserves(claim_id)",
+            "CREATE INDEX IF NOT EXISTS idx_agent_commissions_agent_id ON agent_commissions(agent_id)",
+            "CREATE INDEX IF NOT EXISTS idx_operating_expenses_agency_period ON operating_expenses(agency_id, expense_year, expense_month)"
         ]
         
         for query in index_queries:
@@ -72,7 +80,8 @@ def drop_tables():
     db = Database()
     # Удаляем таблицы в обратном порядке зависимостей
     tables = [
-        'sales_plans', 'flat_contracts', 'home_contracts',
+        'operating_expenses', 'agent_commissions', 'claim_reserves',
+        'claim_payments', 'claims', 'sales_plans', 'flat_contracts', 'home_contracts',
         'kasko_contracts', 'osago_contracts', 'base_contracts',
         'flats', 'houses', 'vehicles', 'clients', 'agents',
         'managers', 'agencies'

@@ -34,6 +34,8 @@ class InsuranceDataGenerator:
         self.used_flat_addresses = set()
         self.db = Database()
         self._clear_caches()
+        self.prev_year = CURRENT_YEAR - 1
+        self.current_year = CURRENT_YEAR
 
         # Расстояния городов от Москвы в км
         self.distance_from_moscow = {
@@ -57,7 +59,12 @@ class InsuranceDataGenerator:
             'kasko_contracts': [],
             'home_contracts': [],
             'flat_contracts': [],
-            'sales_plans': []
+            'sales_plans': [],
+            'claims': [],
+            'claim_payments': [],
+            'claim_reserves': [],
+            'agent_commissions': [],
+            'operating_expenses': []
         }
         
         # Словари для хранения данных для возобновления
@@ -103,6 +110,8 @@ class InsuranceDataGenerator:
         try:
             logging.info("Очистка существующих данных...")
             tables = [
+                'operating_expenses', 'agent_commissions', 'claim_reserves',
+                'claim_payments', 'claims',
                 'sales_plans', 'flat_contracts', 'home_contracts',
                 'kasko_contracts', 'osago_contracts', 'base_contracts',
                 'flats', 'houses', 'vehicles', 'clients', 'agents', 
@@ -190,7 +199,7 @@ class InsuranceDataGenerator:
         self.data['vehicles'] = [{
             'vehicle_vin': self._generate_unique_vin(),
             'model': random.choice(self.car_models),
-            'year': random.randint(2000, 2024),
+            'year': random.randint(2000, self.prev_year),
             'engine_power': random.randint(70, 300),
             'drivers_count': random.choices(
                 ['1', '2', '3', '4', '5', 'без ограничений'],
@@ -249,20 +258,20 @@ class InsuranceDataGenerator:
         available_clients_set = {c['client_id'] for c in self.data['clients']}
         available_vehicles_list = self.data['vehicles']
         
-        # 1. Генерация договоров за 2024 год
+        # 1. Генерация договоров за предыдущий год
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"ОСАГО 2024: обработано {idx}/{total_agents} агентов")
+                logging.info(f"ОСАГО {self.prev_year}: обработано {idx}/{total_agents} агентов")
                 
-            num_contracts_2024 = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 30)
+            num_contracts_prev_year = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 30)
             
-            for _ in range(num_contracts_2024):
+            for _ in range(num_contracts_prev_year):
                 client = random.choice(self.data['clients'])
                 vehicle = random.choice(available_vehicles_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2024, 1, 1),
-                    end_date=datetime(2024, 12, 31)
+                    start_date=datetime(self.prev_year, 1, 1),
+                    end_date=datetime(self.prev_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -297,8 +306,8 @@ class InsuranceDataGenerator:
                 })
                 contract_id += 1
         
-        # 2. Генерация договоров за 2025 год
-        logging.info("Начало генерации ОСАГО 2025 года")
+        # 2. Генерация договоров за текущий год
+        logging.info(f"Начало генерации ОСАГО {self.current_year} года")
         
         renewable_contracts = [
             (cid, data) for cid, data in self.osago_renewable.items() 
@@ -307,7 +316,7 @@ class InsuranceDataGenerator:
         
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"ОСАГО 2025: обработано {idx}/{total_agents} агентов")
+                logging.info(f"ОСАГО {self.current_year}: обработано {idx}/{total_agents} агентов")
                 
             num_contracts = min(self._get_seasonal_contracts_count(datetime.now().month), 30)
             status_weights = [0.7, 0.3] if random.random() < 0.5 else [0.9, 0.1]
@@ -330,8 +339,8 @@ class InsuranceDataGenerator:
                 vehicle['kbm'] = new_kbm
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -368,8 +377,8 @@ class InsuranceDataGenerator:
                 vehicle = random.choice(available_vehicles_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -419,20 +428,20 @@ class InsuranceDataGenerator:
         available_clients_set = {c['client_id'] for c in self.data['clients']}
         available_vehicles_list = self.data['vehicles']
         
-        # 1. Генерация договоров за 2024 год
+        # 1. Генерация договоров за предыдущий год
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"КАСКО 2024: обработано {idx}/{total_agents} агентов")
+                logging.info(f"КАСКО {self.prev_year}: обработано {idx}/{total_agents} агентов")
                 
-            num_contracts_2024 = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 20)
+            num_contracts_prev_year = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 20)
             
-            for _ in range(num_contracts_2024):
+            for _ in range(num_contracts_prev_year):
                 client = random.choice(self.data['clients'])
                 vehicle = random.choice(available_vehicles_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2024, 1, 1),
-                    end_date=datetime(2024, 12, 31)
+                    start_date=datetime(self.prev_year, 1, 1),
+                    end_date=datetime(self.prev_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -467,8 +476,8 @@ class InsuranceDataGenerator:
                 })
                 contract_id += 1
         
-        # 2. Генерация договоров за 2025 год
-        logging.info("Начало генерации КАСКО 2025 года")
+        # 2. Генерация договоров за текущий год
+        logging.info(f"Начало генерации КАСКО {self.current_year} года")
         
         renewable_contracts = [
             (cid, data) for cid, data in self.kasko_renewable.items() 
@@ -477,7 +486,7 @@ class InsuranceDataGenerator:
         
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"КАСКО 2025: обработано {idx}/{total_agents} агентов")
+                logging.info(f"КАСКО {self.current_year}: обработано {idx}/{total_agents} агентов")
                 
             num_contracts = min(self._get_seasonal_contracts_count(datetime.now().month), 20)
             status_weights = [0.7, 0.3] if random.random() < 0.5 else [0.9, 0.1]
@@ -499,8 +508,8 @@ class InsuranceDataGenerator:
                 sum_insured = renew_data['sum_insured'] * random.uniform(1.0, 1.1)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -537,8 +546,8 @@ class InsuranceDataGenerator:
                 vehicle = random.choice(available_vehicles_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -593,24 +602,24 @@ class InsuranceDataGenerator:
         available_houses_set = {h['house_id'] for h in self.data['houses']}
         available_houses_list = self.data['houses']
         
-        # 1. Генерация договоров за 2024 год
+        # 1. Генерация договоров за предыдущий год
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"Дома 2024: обработано {idx}/{total_agents} агентов")
+                logging.info(f"Дома {self.prev_year}: обработано {idx}/{total_agents} агентов")
                 
             manager = next(m for m in self.data['managers'] if m['manager_id'] == agent['manager_id'])
             agency = next(a for a in self.data['agencies'] if a['agency_id'] == manager['agency_id'])
             city = agency['city']
             
-            num_contracts_2024 = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 15)
+            num_contracts_prev_year = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 15)
             
-            for _ in range(num_contracts_2024):
+            for _ in range(num_contracts_prev_year):
                 client = random.choice(self.data['clients'])
                 house = random.choice(available_houses_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2024, 1, 1),
-                    end_date=datetime(2024, 12, 31)
+                    start_date=datetime(self.prev_year, 1, 1),
+                    end_date=datetime(self.prev_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -649,8 +658,8 @@ class InsuranceDataGenerator:
                 })
                 contract_id += 1
         
-        # 2. Генерация договоров за 2025 год
-        logging.info("Начало генерации договоров домов 2025 года")
+        # 2. Генерация договоров за текущий год
+        logging.info(f"Начало генерации договоров домов {self.current_year} года")
         
         renewable_contracts = [
             (cid, data) for cid, data in self.home_renewable.items() 
@@ -660,7 +669,7 @@ class InsuranceDataGenerator:
         
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"Дома 2025: обработано {idx}/{total_agents} агентов")
+                logging.info(f"Дома {self.current_year}: обработано {idx}/{total_agents} агентов")
                 
             manager = next(m for m in self.data['managers'] if m['manager_id'] == agent['manager_id'])
             agency = next(a for a in self.data['agencies'] if a['agency_id'] == manager['agency_id'])
@@ -684,8 +693,8 @@ class InsuranceDataGenerator:
                 house = renew_data['house']
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -728,8 +737,8 @@ class InsuranceDataGenerator:
                 house = random.choice(available_houses_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -790,24 +799,24 @@ class InsuranceDataGenerator:
         available_flats_set = {f['flat_id'] for f in self.data['flats']}
         available_flats_list = self.data['flats']
         
-        # 1. Генерация договоров за 2024 год
+        # 1. Генерация договоров за предыдущий год
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"Квартиры 2024: обработано {idx}/{total_agents} агентов")
+                logging.info(f"Квартиры {self.prev_year}: обработано {idx}/{total_agents} агентов")
                 
             manager = next(m for m in self.data['managers'] if m['manager_id'] == agent['manager_id'])
             agency = next(a for a in self.data['agencies'] if a['agency_id'] == manager['agency_id'])
             city = agency['city']
             
-            num_contracts_2024 = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 20)
+            num_contracts_prev_year = min(self._get_seasonal_contracts_count(random.randint(1, 12)), 20)
             
-            for _ in range(num_contracts_2024):
+            for _ in range(num_contracts_prev_year):
                 client = random.choice(self.data['clients'])
                 flat = random.choice(available_flats_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2024, 1, 1),
-                    end_date=datetime(2024, 12, 31)
+                    start_date=datetime(self.prev_year, 1, 1),
+                    end_date=datetime(self.prev_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -841,8 +850,8 @@ class InsuranceDataGenerator:
                 })
                 contract_id += 1
         
-        # 2. Генерация договоров за 2025 год
-        logging.info("Начало генерации договоров квартир 2025 года")
+        # 2. Генерация договоров за текущий год
+        logging.info(f"Начало генерации договоров квартир {self.current_year} года")
         
         renewable_contracts = [
             (cid, data) for cid, data in self.flat_renewable.items() 
@@ -852,7 +861,7 @@ class InsuranceDataGenerator:
         
         for idx, agent in enumerate(self.data['agents']):
             if idx % 20 == 0:
-                logging.info(f"Квартиры 2025: обработано {idx}/{total_agents} агентов")
+                logging.info(f"Квартиры {self.current_year}: обработано {idx}/{total_agents} агентов")
                 
             manager = next(m for m in self.data['managers'] if m['manager_id'] == agent['manager_id'])
             agency = next(a for a in self.data['agencies'] if a['agency_id'] == manager['agency_id'])
@@ -876,8 +885,8 @@ class InsuranceDataGenerator:
                 flat = renew_data['flat']
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -915,8 +924,8 @@ class InsuranceDataGenerator:
                 flat = random.choice(available_flats_list)
                 
                 start_date = self.fake.date_between(
-                    start_date=datetime(2025, 1, 1),
-                    end_date=datetime(2025, 12, 31)
+                    start_date=datetime(self.current_year, 1, 1),
+                    end_date=datetime(self.current_year, 12, 31)
                 )
                 end_date = start_date + timedelta(days=365)
                 
@@ -963,7 +972,7 @@ class InsuranceDataGenerator:
             }
             for c in self.data['base_contracts']
             if c['contract_status'] == 'оформлен' and 
-               datetime.strptime(c['start_date'], '%Y-%m-%d').year == CURRENT_YEAR - 1
+               datetime.strptime(c['start_date'], '%Y-%m-%d').year == self.prev_year
         ]
         
         df = pd.DataFrame(prev_year_contracts)
@@ -999,7 +1008,7 @@ class InsuranceDataGenerator:
                         # Явно конвертируем в float
                         plans.append({
                             'agent_id': agent['agent_id'],
-                            'year': CURRENT_YEAR,
+                            'year': self.current_year,
                             'month': month,
                             'product_type': product_type,
                             'plan_amount': float(round(plan_amount, 2))  # Конвертируем в float
@@ -1007,6 +1016,148 @@ class InsuranceDataGenerator:
     
         self.data['sales_plans'] = plans
         logging.info(f"Сгенерировано {len(self.data['sales_plans'])} планов продаж")
+
+    def generate_claims_and_financials(self):
+        """Генерация сущностей убытков, выплат, резервов, комиссий и расходов."""
+        claims = []
+        claim_payments = []
+        claim_reserves = []
+        agent_commissions = []
+        operating_expenses = []
+
+        claim_id = 1
+        payment_id = 1
+        reserve_id = 1
+        commission_id = 1
+        expense_id = 1
+
+        # Комиссии и клеймы по оформленным договорам
+        for contract in self.data['base_contracts']:
+            if contract['contract_status'] != 'оформлен':
+                continue
+
+            start_date = datetime.strptime(contract['start_date'], '%Y-%m-%d')
+            premium = float(contract['premium'])
+            payout = float(contract['payout'] or 0)
+
+            # Комиссионная ставка ближе к реальной практике: зависит от продукта
+            commission_rate_map = {
+                'ОСАГО': 0.12,
+                'КАСКО': 0.10,
+                'ИФЛ Дом': 0.18,
+                'ИФЛ Квартира': 0.16
+            }
+            commission_rate = commission_rate_map.get(contract['contract_type'], 0.12)
+            agent_commissions.append({
+                'commission_id': commission_id,
+                'contract_id': contract['contract_id'],
+                'agent_id': contract['agent_id'],
+                'accrual_date': start_date.strftime('%Y-%m-%d'),
+                'commission_rate': commission_rate,
+                'commission_amount': round(premium * commission_rate, 2)
+            })
+            commission_id += 1
+
+            # Формируем клейм при наличии выплат или с малой вероятностью "reported"
+            should_create_claim = payout > 0 or random.random() < 0.05
+            if not should_create_claim:
+                continue
+
+            claim_date = start_date + timedelta(days=random.randint(5, 250))
+            reported_date = claim_date + timedelta(days=random.randint(0, 7))
+            claimed_amount = payout if payout > 0 else round(premium * random.uniform(0.2, 0.9), 2)
+
+            if payout > 0:
+                claim_status = random.choices(['closed', 'partially_paid'], weights=[0.75, 0.25])[0]
+                approved_amount = round(max(payout, claimed_amount * random.uniform(0.6, 1.0)), 2)
+                settled_date = reported_date + timedelta(days=random.randint(10, 90))
+                decline_reason = None
+            else:
+                claim_status = random.choices(['rejected', 'open'], weights=[0.6, 0.4])[0]
+                approved_amount = 0 if claim_status == 'rejected' else round(claimed_amount * random.uniform(0.2, 0.7), 2)
+                settled_date = None if claim_status == 'open' else reported_date + timedelta(days=random.randint(5, 30))
+                decline_reason = 'insufficient_documents' if claim_status == 'rejected' else None
+
+            claims.append({
+                'claim_id': claim_id,
+                'contract_id': contract['contract_id'],
+                'claim_date': claim_date.strftime('%Y-%m-%d'),
+                'reported_date': reported_date.strftime('%Y-%m-%d'),
+                'settled_date': settled_date.strftime('%Y-%m-%d') if settled_date else None,
+                'claim_status': claim_status,
+                'claimed_amount': round(claimed_amount, 2),
+                'approved_amount': round(approved_amount, 2),
+                'decline_reason': decline_reason
+            })
+
+            # Разбивка выплат по этапам урегулирования
+            if approved_amount > 0:
+                if claim_status == 'partially_paid':
+                    first_payment = round(approved_amount * random.uniform(0.4, 0.7), 2)
+                    second_payment = round(approved_amount - first_payment, 2)
+                    pay_dates = [
+                        reported_date + timedelta(days=random.randint(7, 30)),
+                        reported_date + timedelta(days=random.randint(31, 90))
+                    ]
+                    for amount, pay_date in [(first_payment, pay_dates[0]), (second_payment, pay_dates[1])]:
+                        claim_payments.append({
+                            'payment_id': payment_id,
+                            'claim_id': claim_id,
+                            'payment_date': pay_date.strftime('%Y-%m-%d'),
+                            'payment_amount': amount
+                        })
+                        payment_id += 1
+                else:
+                    claim_payments.append({
+                        'payment_id': payment_id,
+                        'claim_id': claim_id,
+                        'payment_date': (reported_date + timedelta(days=random.randint(7, 60))).strftime('%Y-%m-%d'),
+                        'payment_amount': approved_amount
+                    })
+                    payment_id += 1
+
+            if claim_status == 'open':
+                claim_reserves.append({
+                    'reserve_id': reserve_id,
+                    'claim_id': claim_id,
+                    'reserve_date': reported_date.strftime('%Y-%m-%d'),
+                    'reserve_amount': round(claimed_amount * random.uniform(0.4, 0.9), 2)
+                })
+                reserve_id += 1
+
+            claim_id += 1
+
+        # Операционные расходы по агентствам (ежемесячные)
+        expense_types = ['rent', 'payroll', 'marketing', 'it', 'utilities']
+        base_amounts = {'rent': 180000, 'payroll': 550000, 'marketing': 90000, 'it': 60000, 'utilities': 25000}
+        for agency in self.data['agencies']:
+            for year in [self.prev_year, self.current_year]:
+                for month in range(1, 13):
+                    season_factor = SEASONAL_COEFFICIENTS.get(month, 1.0)
+                    for expense_type in expense_types:
+                        amount = base_amounts[expense_type] * random.uniform(0.85, 1.2)
+                        if expense_type == 'marketing':
+                            amount *= season_factor
+                        operating_expenses.append({
+                            'expense_id': expense_id,
+                            'agency_id': agency['agency_id'],
+                            'expense_year': year,
+                            'expense_month': month,
+                            'expense_type': expense_type,
+                            'amount': round(amount, 2)
+                        })
+                        expense_id += 1
+
+        self.data['claims'] = claims
+        self.data['claim_payments'] = claim_payments
+        self.data['claim_reserves'] = claim_reserves
+        self.data['agent_commissions'] = agent_commissions
+        self.data['operating_expenses'] = operating_expenses
+
+        logging.info(
+            "Сгенерированы финансовые сущности: claims=%s, payments=%s, reserves=%s, commissions=%s, expenses=%s",
+            len(claims), len(claim_payments), len(claim_reserves), len(agent_commissions), len(operating_expenses)
+        )
 
     def _save_to_postgres(self):
         """Сохранение данных в PostgreSQL"""
@@ -1077,6 +1228,7 @@ class InsuranceDataGenerator:
             self.generate_home_contracts()
             self.generate_flat_contracts()
             self.generate_sales_plans()
+            self.generate_claims_and_financials()
 
             if not self._save_to_postgres():
                 raise Exception("Не удалось сохранить данные в PostgreSQL")
