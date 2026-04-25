@@ -20,7 +20,7 @@ def initialize_database():
     try:
         # Создаем таблицы в правильном порядке с учетом зависимостей
         creation_order = [
-            'agencies', 'managers', 'agents', 'clients',
+            'agencies', 'agency_curators', 'managers', 'agents', 'clients',
             'vehicles', 'houses', 'flats', 'base_contracts',
             'osago_contracts', 'kasko_contracts', 'home_contracts',
             'flat_contracts', 'sales_plans', 'claims',
@@ -84,7 +84,7 @@ def drop_tables():
         'claim_payments', 'claims', 'sales_plans', 'flat_contracts', 'home_contracts',
         'kasko_contracts', 'osago_contracts', 'base_contracts',
         'flats', 'houses', 'vehicles', 'clients', 'agents',
-        'managers', 'agencies'
+        'managers', 'agency_curators', 'agencies'
     ]
     for table in tables:
         db.execute(f"DROP TABLE IF EXISTS {table} CASCADE")

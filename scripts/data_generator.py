@@ -12,7 +12,8 @@ from typing import Dict, List, Optional, Tuple
 from config.database import Database
 from config.settings import (
     CITIES, DATE_RANGE, CURRENT_YEAR, 
-    SALES_PLAN_MULTIPLIER, SEASONAL_COEFFICIENTS, SEED
+    SALES_PLAN_MULTIPLIER, SEASONAL_COEFFICIENTS, SEED,
+    GENERATION_START_YEAR, GENERATION_END_YEAR
 )
 
 # Настройка логирования
@@ -34,8 +35,8 @@ class InsuranceDataGenerator:
         self.used_flat_addresses = set()
         self.db = Database()
         self._clear_caches()
-        self.prev_year = CURRENT_YEAR - 1
-        self.current_year = CURRENT_YEAR
+        self.prev_year = GENERATION_START_YEAR
+        self.current_year = GENERATION_END_YEAR
 
         # Расстояния городов от Москвы в км
         self.distance_from_moscow = {
@@ -48,6 +49,7 @@ class InsuranceDataGenerator:
         
         self.data = {
             'agencies': [],
+            'agency_curators': [],
             'managers': [],
             'agents': [],
             'clients': [],
@@ -133,6 +135,14 @@ class InsuranceDataGenerator:
             'address': self.fake.address()
         } for i, city in enumerate(CITIES)]
         logging.info(f"Сгенерировано {len(self.data['agencies'])} агентств")
+
+    def generate_agency_curators(self):
+        """Генерация кураторов агентств (1 к 1)."""
+        self.data['agency_curators'] = [{
+            'agency_id': agency['agency_id'],
+            'curator_name': self.fake.name()
+        } for agency in self.data['agencies']]
+        logging.info(f"Сгенерировано {len(self.data['agency_curators'])} кураторов агентств")
 
     def generate_managers(self):
         """Генерация данных менеджеров"""
@@ -1217,6 +1227,7 @@ class InsuranceDataGenerator:
             logging.info("🚀 НАЧАЛО ГЕНЕРАЦИИ ДАННЫХ С ОПТИМИЗАЦИЕЙ")
             
             self.generate_agencies()
+            self.generate_agency_curators()
             self.generate_managers()
             self.generate_agents()
             self.generate_clients()

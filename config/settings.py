@@ -32,6 +32,8 @@ DATE_RANGE = {
     'start': f'{CURRENT_YEAR-1}-01-01',
     'end': f'{CURRENT_YEAR}-12-31'
 }
+GENERATION_START_YEAR = int(os.getenv('GENERATION_START_YEAR', '2024'))
+GENERATION_END_YEAR = int(os.getenv('GENERATION_END_YEAR', '2025'))
 
 # Коэффициенты
 SALES_PLAN_MULTIPLIER = 1.2  # 20% рост планов
@@ -47,6 +49,15 @@ TABLES_CONFIG = {
             ('agency_id', 'SERIAL PRIMARY KEY'),
             ('city', 'VARCHAR(100) NOT NULL'),
             ('address', 'TEXT NOT NULL')
+        ]
+    },
+    'agency_curators': {
+        'columns': [
+            ('agency_id', 'INTEGER PRIMARY KEY'),
+            ('curator_name', 'VARCHAR(100) NOT NULL')
+        ],
+        'foreign_keys': [
+            ('agency_id', 'agencies(agency_id)')
         ]
     },
     'managers': {
