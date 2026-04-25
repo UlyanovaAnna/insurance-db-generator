@@ -14,7 +14,7 @@ A synthetic insurance data platform for safe analytics prototyping, SQL validati
 
 ## Tech Stack
 
-- Python 3.10+
+- Python 3.13+
 - PostgreSQL
 - pandas, numpy, psycopg2-binary, Faker, python-dotenv
 
